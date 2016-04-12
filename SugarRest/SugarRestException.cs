@@ -36,11 +36,11 @@ namespace SugarTools
                     }
                     else if (result.error.Equals("invalid_grant") && result.error_message.Equals("Invalid refresh token"))
                     {
-                        throw new WebException(result.error_message, e);
+                        throw new SugarRestException(result.error_message, e);
                     }
                     else
                     {
-                        throw new WebException(result.error_message, e);
+                        throw new SugarRestException(result.error_message, e);
                     }
                 }
             } else
@@ -50,5 +50,6 @@ namespace SugarTools
         }
         public SugarRestException() : base() {}
         public SugarRestException(string Message) : base(Message) {}
+        public SugarRestException(string Message, Exception e) : base(Message, e) {}
     }
 }

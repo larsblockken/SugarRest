@@ -188,11 +188,18 @@ namespace SugarTools
         /// <returns>Dynamic object with record_offset and records array</returns>
         public dynamic search(string query, int maxNum = 20, int offset = 0, string fields = null, string orderBy = null, int favorites = 0, int myItems = 0)
         {
-            string rawUrl = "/rest/v10/search?q=" + HttpUtility.UrlEncode(query) + "&max_num=" + maxNum + "&offset=" + offset;
-            rawUrl += "&favorites=" + favorites + "&my_items=" + myItems;
-            rawUrl += (!string.IsNullOrEmpty(fields)) ? "&fields=" + HttpUtility.UrlEncode(fields) : "";
-            rawUrl += (!string.IsNullOrEmpty(orderBy)) ? "&orderBy=" + HttpUtility.UrlEncode(orderBy) : "";
-            return this.call(rawUrl, "GET");
+            var url = new StringBuilder();
+            url.Append("/rest/v10/search?q=" + HttpUtility.UrlEncode(query));
+            url.Append("&max_num=" + maxNum);
+            url.Append("&offset=" + offset);
+            url.Append("&favorites=" + favorites);
+            url.Append("&my_items=" + myItems);
+            if (string.IsNullOrEmpty(fields))
+                url.Append("&fields=" + HttpUtility.UrlEncode(fields));
+            if (string.IsNullOrEmpty(orderBy))
+                url.Append("&orderBy=" + HttpUtility.UrlEncode(orderBy));
+
+            return this.call(url.ToString(), "GET");
         }
 
         /// <summary>
@@ -208,11 +215,18 @@ namespace SugarTools
         /// <returns>Dynamic object with record_offset and records array of users</returns>
         public dynamic searchUsers(string query, int maxNum = 20, int offset = 0, string fields = null, string orderBy = null, int favorites = 0, int myItems = 0)
         {
-            string rawUrl = "/rest/v10/Users?q=" + HttpUtility.UrlEncode(query) + "&max_num=" + maxNum + "&offset=" + offset;
-            rawUrl += "&favorites=" + favorites + "&my_items=" + myItems;
-            rawUrl += (!string.IsNullOrEmpty(fields)) ? "&fields=" + HttpUtility.UrlEncode(fields) : "";
-            rawUrl += (!string.IsNullOrEmpty(orderBy)) ? "&orderBy=" + HttpUtility.UrlEncode(orderBy) : "";
-            return this.call(rawUrl, "GET");
+            var url = new StringBuilder();
+            url.Append("/rest/v10/Users?q=" + HttpUtility.UrlEncode(query));
+            url.Append("&max_num=" + maxNum);
+            url.Append("&offset=" + offset);
+            url.Append("&favorites=" + favorites);
+            url.Append("&my_items=" + myItems);
+            if (!string.IsNullOrEmpty(fields))
+                url.Append("&fields=" + HttpUtility.UrlEncode(fields));
+            if (!string.IsNullOrEmpty(orderBy))
+                url.Append("&orderBy=" + HttpUtility.UrlEncode(orderBy));
+
+            return this.call(url.ToString(), "GET");
         }
 
         /// <summary>
@@ -229,8 +243,20 @@ namespace SugarTools
         /// <returns>Dynamic object with record_offset and records array</returns>
         public dynamic searchModule(string module, string query, int maxNum = 20, int offset = 0, string fields = null, string view = null, string orderBy = null, int deleted = 0)
         {
-            string rawUrl = "/rest/v10/" + HttpUtility.UrlEncode(module) + "?q=" + query;
-            return this.call(rawUrl, "GET");
+            var url = new StringBuilder();
+            url.Append("/rest/v10/" + HttpUtility.UrlEncode(module));
+            url.Append("?q=" + query);
+            url.Append("&max_num=" + maxNum);
+            url.Append("&offset=" + offset);
+            url.Append("&deleted=" + deleted);
+            if (!string.IsNullOrEmpty(fields))
+                url.Append("&fields=" + HttpUtility.UrlEncode(fields));
+            if (!string.IsNullOrEmpty(fields))
+                url.Append("&view=" + HttpUtility.UrlEncode(view));
+            if (!string.IsNullOrEmpty(orderBy))
+                url.Append("&orderBy=" + HttpUtility.UrlEncode(orderBy));
+
+            return this.call(url.ToString(), "GET");
         }
 
         /// <summary>
@@ -348,5 +374,19 @@ namespace SugarTools
         {
             return this.call("/rest/v10/" + HttpUtility.UrlEncode(module) + "/" + HttpUtility.UrlEncode(id) + "/favorite", "DELETE");
         }
+
+        /// <summary>
+        /// Retrieve attached file
+        /// </summary>
+        /// <param name="module">Module name</param>
+        /// <param name="recordId">Record id</param>
+        /// <param name="fileField">File field name</param>
+        /// <returns>Stream with file contents</returns>
+        public Stream getFile(string module, string recordId, string fileField)
+        {
+            throw new NotImplementedException();
+        }
+
+
     }
 }
