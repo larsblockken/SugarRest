@@ -17,6 +17,7 @@ using System.Text;
 using System.Net;
 using System.IO;
 using System.Web;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace SugarTools
@@ -81,8 +82,8 @@ namespace SugarTools
 
             try
             {
-                Uri requestUrl = new Uri(URL + call);
-                HttpWebRequest req = (HttpWebRequest)WebRequest.Create(requestUrl);
+                var requestUrl = new Uri(URL + call);
+                var req = (HttpWebRequest)WebRequest.Create(requestUrl);
                 req.Method = method;
                 req.ContentType = "application/json;charset=utf-8;";
                 req.CookieContainer = cc;
@@ -95,7 +96,7 @@ namespace SugarTools
                 if ((method.Equals("POST") || method.Equals("PUT")) && !ReferenceEquals(null, data))
                 {
                     string json = JsonConvert.SerializeObject(data);
-                    UTF8Encoding encoding = new UTF8Encoding();
+                    var encoding = new UTF8Encoding();
                     byte[] bytes = encoding.GetBytes(json);
                     req.ContentLength = bytes.Length;
                     using (Stream requestStream = req.GetRequestStream())
@@ -106,12 +107,27 @@ namespace SugarTools
 
                 using (WebResponse response = req.GetResponse())
                 {
-                    using (StreamReader sr = new StreamReader(response.GetResponseStream()))
+
+                    if (response.ContentType.Equals("application/json"))
+                        using (StreamReader sr = new StreamReader(response.GetResponseStream()))
+                            return JsonConvert.DeserializeObject(sr.ReadToEnd());
+
+                    else if (response.ContentType.Equals("application/octet-stream"))
                     {
-                        dynamic result = JsonConvert.DeserializeObject(sr.ReadToEnd());
-                        return result;
+                        var buffer = new byte[response.ContentLength];
+
+                        int bytesRead = 0;
+                        int chunkSize = 1;
+                        while (bytesRead < buffer.Length && chunkSize > 0)
+                            bytesRead +=
+                                chunkSize = response.GetResponseStream().Read(buffer, bytesRead, buffer.Length - bytesRead);
+
+                        return buffer;
                     }
-                }
+
+                    else
+                        return null;
+               }
             }
             catch (WebException e)
             {
@@ -309,7 +325,7 @@ namespace SugarTools
         /// <returns>Dynamic object with the account information</returns>
         public dynamic retrieveRecord(string module, string id)
         {
-            string rawUrl = "/rest/v10/" + HttpUtility.UrlEncode(module) + "/" + HttpUtility.UrlEncode(id);
+            var rawUrl = "/rest/v10/" + HttpUtility.UrlEncode(module) + "/" + HttpUtility.UrlEncode(id);
             return this.call(rawUrl, "GET");
         }
 
@@ -381,12 +397,14 @@ namespace SugarTools
         /// <param name="module">Module name</param>
         /// <param name="recordId">Record id</param>
         /// <param name="fileField">File field name</param>
-        /// <returns>Stream with file contents</returns>
-        public Stream getFile(string module, string recordId, string fileField)
+        /// <returns>Dictionary with key name for the filename and key data with the data byte [] object</returns>
+        public Dictionary<string, dynamic> getFile(string module, string recordId, string fileField)
         {
-            throw new NotImplementedException();
+            var url = "/rest/v10/" + module + "/" + recordId + "/file/" + fileField;
+            var result = new Dictionary<string, dynamic>();
+            result["name"] = (string)this.retrieveRecord(module, recordId).filename;
+            result["data"] = this.call(url, "GET");
+            return result;
         }
-
-
     }
 }
