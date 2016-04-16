@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using SugarTools;
 
 namespace sugarRestExample
@@ -69,7 +70,20 @@ namespace sugarRestExample
             //Delete record
             sugar.deleteRecord("Meetings", "94dc6611-e085-bbbd-c98f-5703aa39bfdb");
 
-            Console.ReadKey();
+            //Download a file from Notes module, and store it in C:\temp\
+            try
+            {
+                var file = sugar.getFile("Notes", "1c8b7271-0b23-4ccd-c288-570d522e5e98", "filename");
+                var fs = new FileStream(@"C:\temp\" + file["name"], FileMode.Create);
+                fs.Write(file["data"], 0, file["data"].Length);
+                fs.Close();
+            }
+            catch (Exception e)
+            {
+                Console.Write(e.Message);
+            }
+
+        Console.ReadKey();
         }
     }
 }
